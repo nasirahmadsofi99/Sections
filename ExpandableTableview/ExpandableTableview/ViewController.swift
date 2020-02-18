@@ -54,6 +54,9 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tbv.register(HeaderView.self, forHeaderFooterViewReuseIdentifier: "header")
+        tbv.separatorStyle = .none
+        
     }
 
 
@@ -81,33 +84,20 @@ extension ViewController:UITableViewDelegate,UITableViewDataSource {
     
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let v = UIView(frame: .zero)
-        v.backgroundColor = #colorLiteral(red: 0.06715562195, green: 0.1882866323, blue: 0.3501978517, alpha: 1)
         
-        let frame = CGRect(x: 16, y: 0, width: tableView.frame.width - 32, height: 40)
-        let headerLabel = UILabel(frame: frame)
-        v.addSubview(headerLabel)
-        headerLabel.font = .systemFont(ofSize: 18, weight: .semibold)
-        headerLabel.textColor = .white
-        headerLabel.text = "\(sections[section].title)"
-        
-        let btn = UIButton(frame: .init(x: tableView.frame.width - 24 - 32, y: 4, width: 32, height: 32))
-        btn.setImage( sections[section].isExpanded ? UIImage(systemName: "minus") : UIImage(systemName: "plus") , for: .normal)
-        btn.tintColor = .white
-        btn.layer.borderColor = UIColor.white.cgColor
-        btn.layer.borderWidth = 0.5
-        btn.layer.cornerRadius = 4
-        btn.layer.masksToBounds = false
-        btn.addTarget(self, action: #selector(sectionTapped(btn:)), for: .touchUpInside)
-        btn.tag = section
-        v.addSubview(btn)
-        
-        return v
+        let headerView = tableView.dequeueReusableHeaderFooterView(withIdentifier: "header") as? HeaderView
+        headerView?.label.text = "\(sections[section].title)"
+        headerView?.btn.setImage( sections[section].isExpanded ? UIImage(systemName: "minus") : UIImage(systemName: "plus") , for: .normal)
+        headerView?.btn.addTarget(self, action: #selector(sectionTapped(btn:)), for: .touchUpInside)
+        headerView?.btn.tag = section
+        return headerView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         40
     }
+    
+
     
     
     @objc func sectionTapped(btn:UIButton){
@@ -118,4 +108,64 @@ extension ViewController:UITableViewDelegate,UITableViewDataSource {
     
 }
 
+
+
+class HeaderView: UITableViewHeaderFooterView{
+    
+    
+    var label = {  () -> UILabel in
+       let label = UILabel()
+        label.font = .systemFont(ofSize: 18, weight: .semibold)
+        label.textColor = .white
+        return label
+    }()
+    
+    var btn = { () -> UIButton in
+       let btn = UIButton()
+        btn.tintColor = .white
+        btn.layer.borderColor = UIColor.white.cgColor
+        btn.layer.borderWidth = 0.5
+        btn.layer.cornerRadius = 4
+        btn.layer.masksToBounds = false
+        return btn
+    }()
+    
+    
+    var view = { () -> UIView in
+        let view = UIView()
+        view.backgroundColor = #colorLiteral(red: 0.06715562195, green: 0.1882866323, blue: 0.3501978517, alpha: 1)
+        return view
+    }()
+    
+    var seperator = { () -> UIView in
+        let view = UIView()
+        view.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+        return view
+    }()
+    
+    override init(reuseIdentifier: String?) {
+        super.init(reuseIdentifier: reuseIdentifier)
+    
+        contentView.backgroundColor = .white
+        contentView.addSubview(view)
+        view.addSubview(label)
+        view.addSubview(btn)
+        view.addSubview(seperator)
+        
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        view.frame = .init(x: 16, y: 0, width: frame.width - 32, height: frame.height)
+        label.frame = .init(x: 16, y: 0, width: view.frame.width - 32 - 32, height: frame.height)
+        btn.frame = .init(x: label.frame.maxX, y: 5, width: 32, height: frame.height - 9)
+        seperator.frame = .init(x: 0, y: 0, width: view.frame.width, height: 1)
+    }
+    
+}
 
